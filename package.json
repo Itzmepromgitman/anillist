@@ -1,5 +1,5 @@
 {
-  "name": "anilist-proxy",
+  "name": "anilist-proxy", 
   "version": "1.0.0",
   "description": "A proxy server for Anilist GraphQL API",
   "main": "api/graphql.js",
@@ -8,11 +8,7 @@
     "deploy": "vercel --prod"
   },
   "dependencies": {
-    "@graphql-tools/delegate": "^10.0.3",
-    "@graphql-tools/utils": "^10.0.5",
-    "@graphql-tools/wrap": "^10.0.1",
-    "graphql": "^16.8.1",
-    "cross-undici-fetch": "^0.6.6"
+    "cross-fetch": "^4.1.0"
   },
   "devDependencies": {
     "vercel": "^32.3.0"
