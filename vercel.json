@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/graphql.js": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/graphql",
+      "destination": "/api/graphql"
+    }
+  ]
+}
