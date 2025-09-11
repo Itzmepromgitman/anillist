@@ -1,15 +1,19 @@
 {
+  "rewrites": [
+    {
+      "source": "/graphql",
+      "destination": "/api/graphql"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
   "functions": {
     "api/graphql.js": {
       "maxDuration": 10
     }
   },
-  "rewrites": [
-    {
-      "source": "/graphql",
-      "destination": "/api/graphql"
-    }
-  ],
   "headers": [
     {
       "source": "/api/(.*)",
@@ -28,7 +32,5 @@
         }
       ]
     }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false
+  ]
 }
