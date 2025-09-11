@@ -1,13 +1,32 @@
 {
   "functions": {
     "api/graphql.js": {
-      "maxDuration": 30
+      "maxDuration": 10
     }
   },
   "rewrites": [
     {
       "source": "/graphql",
       "destination": "/api/graphql"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
     }
   ]
 }
