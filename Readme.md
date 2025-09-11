@@ -1,129 +1,392 @@
-AniList GraphQL Proxy
+# 🚀 Anilist GraphQL Proxy
 
-A serverless proxy for the AniList GraphQL API, deployable on Vercel for easy, CORS-friendly access from browsers and server apps alike.
+> A fast, secure, and easy-to-use serverless proxy for the Anilist GraphQL API, deployable on Vercel in seconds.
 
-Repository: https://github.com/Itzmepromgitman/Anilist-Api
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FItzmepromgitman%2FAnilist-Api)
 
-Deploy with Vercel:
-[Deploy with Vercel] https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FItzmepromgitman%2FAnilist-Api
+---
 
-Features
-- CORS enabled for browser apps
-- Forwards Authorization: Bearer <token> for authenticated requests
-- Error handling & structured logging
-- Serverless, one-click deploy on Vercel
+## ✨ Features
 
-Endpoints
+- 🌐 **CORS enabled** - Works seamlessly with web applications
+- 🔐 **Authentication support** - Forwards authorization headers for authenticated requests  
+- 🛡️ **Error handling** - Comprehensive error logging and user-friendly responses
+- ⚡ **Serverless ready** - Zero-config deployment on Vercel
+- 🎯 **Drop-in replacement** - Compatible with existing Anilist API implementations
+- 📊 **Rate limiting friendly** - Respects Anilist's API guidelines
+
+---
+
+## 🚀 Quick Deploy
+
+Click the button above to deploy your own instance in under 30 seconds!
+
+**Or manually:**
+
+1. Fork this repository
+2. Connect to Vercel
+3. Deploy with default settings
+4. Your API is ready! 🎉
+
+---
+
+## 📍 API Endpoints
+
 Once deployed, your proxy will be available at:
-- https://your-app.vercel.app/api/graphql
-- https://your-app.vercel.app/graphql (alias)
 
-Quick start
-- One‑click deploy: use the “Deploy with Vercel” button above to clone and deploy this repository to a new Vercel project.
-- No extra config needed for public AniList queries—send GraphQL POST requests to your deployed endpoint.
-- For authenticated queries or mutations, pass Authorization: Bearer <access_token> and keep tokens in server or secure client storage.
+| Endpoint | Description |
+|----------|-------------|
+| `https://your-app.vercel.app/api/graphql` | Main GraphQL endpoint |
+| `https://your-app.vercel.app/graphql` | Aliased endpoint (shorter URL) |
 
-Why a proxy?
-- Browser apps can avoid direct calls to https://graphql.anilist.co while keeping CORS simple.
-- A proxy standardizes headers, payload shape, and logging, and makes it easy to evolve usage policies.
+---
 
-Usage
-AniList requires POST requests with a JSON body containing query and optional variables.
+## 📖 Usage Examples
 
-cURL (unauthenticated)
-------------------------------------------------------------
-curl -sX POST "https://your-app.vercel.app/api/graphql" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "query": "query ($id: Int) { Media(id: $id, type: ANIME) { id title { romaji english native } } }",
-    "variables": { "id": 15125 }
-  }'
-------------------------------------------------------------
+### Basic Query (JavaScript/Fetch)
 
-JavaScript fetch (unauthenticated)
-------------------------------------------------------------
+```javascript
 const query = `
   query ($id: Int) {
-    Media(id: $id, type: ANIME) {
+    Media (id: $id, type: ANIME) {
       id
-      title { romaji english native }
+      title {
+        romaji
+        english
+        native
+      }
+      description
+      episodes
+      status
+      averageScore
     }
   }
 `;
 
-const variables = { id: 15125 };
+const variables = {
+  id: 15125
+};
 
-const res = await fetch("https://your-app.vercel.app/api/graphql", {
-  method: "POST",
-  headers: { "Content-Type": "application/json", "Accept": "application/json" },
-  body: JSON.stringify({ query, variables })
-});
+fetch('https://your-app.vercel.app/api/graphql', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    query: query,
+    variables: variables
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
 
-const data = await res.json();
-console.log(data);
-------------------------------------------------------------
+### With Authentication (for user-specific data)
 
-JavaScript fetch (authenticated “Viewer”)
-------------------------------------------------------------
+```javascript
 const query = `
   query {
     Viewer {
       id
       name
+      avatar {
+        large
+      }
+      statistics {
+        anime {
+          count
+          meanScore
+        }
+      }
     }
   }
 `;
 
-const res = await fetch("https://your-app.vercel.app/api/graphql", {
-  method: "POST",
+fetch('https://your-app.vercel.app/api/graphql', {
+  method: 'POST',
   headers: {
-    "Content-Type": "application/json",
-    "Accept": "application/json",
-    "Authorization": `Bearer ${process.env.ANILIST_TOKEN}`
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer YOUR_ACCESS_TOKEN'
   },
   body: JSON.stringify({ query })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
+### Search Anime
+
+```javascript
+const searchAnime = async (searchTerm) => {
+  const query = `
+    query ($search: String) {
+      Page (perPage: 10) {
+        media (search: $search, type: ANIME) {
+          id
+          title {
+            romaji
+            english
+          }
+          coverImage {
+            medium
+            large
+          }
+          startDate {
+            year
+          }
+          averageScore
+          genres
+        }
+      }
+    }
+  `;
+
+  const response = await fetch('https://your-app.vercel.app/api/graphql', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      query,
+      variables: { search: searchTerm }
+    })
+  });
+
+  return response.json();
+};
+
+// Usage
+searchAnime('Attack on Titan').then(console.log);
+```
+
+### Using with Axios
+
+```javascript
+import axios from 'axios';
+
+const client = axios.create({
+  baseURL: 'https://your-app.vercel.app',
+  headers: {
+    'Content-Type': 'application/json',
+  }
 });
 
-const data = await res.json();
-console.log(data);
-------------------------------------------------------------
+const getAnimeDetails = async (animeId) => {
+  const query = `
+    query ($id: Int) {
+      Media (id: $id, type: ANIME) {
+        title { romaji }
+        description
+        episodes
+        status
+        genres
+        studios {
+          nodes {
+            name
+          }
+        }
+      }
+    }
+  `;
 
-Python requests
-------------------------------------------------------------
-import requests
+  try {
+    const response = await client.post('/api/graphql', {
+      query,
+      variables: { id: animeId }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching anime:', error);
+  }
+};
+```
 
-query = """
-  query ($id: Int) {
-    Media(id: $id, type: ANIME) {
+---
+
+## 🔧 Local Development
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+
+### Setup
+```bash
+# Clone the repository
+git clone https://github.com/Itzmepromgitman/Anilist-Api.git
+
+# Navigate to project directory
+cd Anilist-Api
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+Your proxy will be available at `http://localhost:3000/api/graphql`
+
+---
+
+## 🛠️ Configuration
+
+### Environment Variables (Optional)
+
+Create a `.env.local` file for custom configuration:
+
+```env
+# Optional: Custom Anilist API URL (defaults to https://graphql.anilist.co)
+ANILIST_API_URL=https://graphql.anilist.co
+
+# Optional: Enable debug logging
+DEBUG=true
+```
+
+### Custom Headers
+
+The proxy automatically forwards these headers:
+- `Authorization` - For authenticated requests
+- `Content-Type` - Request content type
+- `User-Agent` - Client identification
+
+---
+
+## 📚 Common Queries
+
+<details>
+<summary><strong>Get Trending Anime</strong></summary>
+
+```graphql
+query {
+  Page (perPage: 20) {
+    media (type: ANIME, sort: TRENDING_DESC) {
       id
-      title { romaji english native }
+      title {
+        romaji
+        english
+      }
+      coverImage {
+        large
+      }
+      averageScore
+      genres
     }
   }
-"""
-variables = { "id": 15125 }
+}
+```
+</details>
 
-resp = requests.post(
-  "https://your-app.vercel.app/api/graphql",
-  json={ "query": query, "variables": variables },
-  headers={ "Accept": "application/json" }
-)
-print(resp.json())
-------------------------------------------------------------
+<details>
+<summary><strong>Get User's Anime List</strong></summary>
 
-Authentication (optional but required for user‑specific data)
-- Create an AniList application and obtain an access token using OAuth.
-- Send requests to the proxy with: Authorization: Bearer <access_token>.
-- Use the standard Authorization Code flow for user login and token exchange.
+```graphql
+query ($userName: String) {
+  MediaListCollection (userName: $userName, type: ANIME) {
+    lists {
+      name
+      entries {
+        media {
+          title {
+            romaji
+          }
+        }
+        score
+        status
+      }
+    }
+  }
+}
+```
+</details>
 
-Tips
-- Shape your payload as { "query": "...", "variables": { ... } } and always use POST.
-- Try queries in AniList’s GraphiQL explorer to iterate quickly, then paste them into requests to your proxy.
-- AniList commonly enforces request limits; build retries/backoff in clients consuming the proxy.
+<details>
+<summary><strong>Get Anime by Genre</strong></summary>
 
-Troubleshooting
-- 400 errors: check JSON shape (query + optional variables) and Content-Type: application/json.
-- 401 errors: missing/invalid Authorization header for queries that require authentication.
-- CORS: ensure requests come from allowed origins or call from a server environment if stricter policies are applied.
+```graphql
+query ($genre: String) {
+  Page (perPage: 25) {
+    media (type: ANIME, genre: $genre, sort: POPULARITY_DESC) {
+      id
+      title {
+        romaji
+      }
+      description
+      episodes
+      averageScore
+      popularity
+    }
+  }
+}
+```
+</details>
 
-License
-MIT
+---
+
+## 🚨 Error Handling
+
+The proxy provides detailed error responses:
+
+```json
+{
+  "errors": [
+    {
+      "message": "Error description",
+      "locations": [...],
+      "path": [...]
+    }
+  ]
+}
+```
+
+Common error scenarios:
+- **400 Bad Request** - Invalid GraphQL query
+- **401 Unauthorized** - Invalid or missing authorization token
+- **429 Too Many Requests** - Rate limit exceeded
+- **500 Internal Server Error** - Proxy or upstream API error
+
+---
+
+## 📈 Rate Limits
+
+This proxy respects Anilist's rate limiting:
+- **90 requests per minute** for authenticated requests
+- **60 requests per minute** for anonymous requests
+
+The proxy will forward rate limit headers from Anilist API.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🔗 Useful Links
+
+- [Anilist GraphQL Documentation](https://anilist.gitbook.io/anilist-apiv2-docs/)
+- [Anilist GraphQL Explorer](https://anilist.co/graphiql)
+- [Vercel Documentation](https://vercel.com/docs)
+- [GraphQL Learning Resources](https://graphql.org/learn/)
+
+---
+
+<div align="center">
+
+**Made with ❤️ for the anime community**
+
+[⭐ Star this repo](https://github.com/Itzmepromgitman/Anilist-Api) • [🐛 Report Bug](https://github.com/Itzmepromgitman/Anilist-Api/issues) • [💡 Request Feature](https://github.com/Itzmepromgitman/Anilist-Api/issues)
+
+</div>
